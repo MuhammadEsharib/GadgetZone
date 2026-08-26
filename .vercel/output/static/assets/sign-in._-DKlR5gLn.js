@@ -1,0 +1,1 @@
+import{A as e,Z as t}from"./ClerkProvider-CiYDNhDY-C2eEEBjA.js";import{t as n}from"./uiComponents-BEgjDpLh.js";var r=t(e());function i(){return(0,r.jsx)(`div`,{className:`flex min-h-screen items-center justify-center`,children:(0,r.jsx)(n,{})})}export{i as component};
