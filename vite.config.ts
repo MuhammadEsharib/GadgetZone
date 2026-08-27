@@ -5,9 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [
-    tanstackStart({
-      target: "vercel", // <-- ye ab error nahi dega
-    }),
+    tanstackStart(), // <-- bilkul khali. koi option nahi
     tailwindcss(),
     react(),
   ],
