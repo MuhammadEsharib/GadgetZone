@@ -6,18 +6,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [
     tanstackStart({
-      target: "vercel", // <-- nitro hatao, sirf ye rahe
+      target: "vercel", // <-- ye ab error nahi dega
     }),
     tailwindcss(),
     react(),
   ],
   resolve: {
-    tsconfigPaths: true,
-    alias: {
-      "@": "/src",
-    },
-  },
-  server: {
-    port: 8080,
+    alias: { "@": "/src" },
   },
 });
