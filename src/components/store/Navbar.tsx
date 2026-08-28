@@ -218,8 +218,8 @@ export function Navbar({
               </IconButton>
 
               {/* Wishlist Link */}
-              <Link to="/wishlist" className="relative hidden md:block">
-                <IconButton label="Wishlist" onClick={() => {}}>
+              <Link to="/wishlist" className="relative hidden md:block" title="Wishlist" aria-label="Wishlist">
+                <IconButton label="Wishlist" asSpan>
                   <Heart className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
                   {wishlistCount > 0 && (
                     <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-md">
@@ -255,15 +255,15 @@ export function Navbar({
                   </Link>
                 </div>
               ) : (
-                <Link to="/account" className="relative">
-                  <IconButton label="Account" onClick={() => {}}>
+                <Link to="/account" className="relative" title="Account" aria-label="Account">
+                  <IconButton label="Account" asSpan>
                     <User className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
                   </IconButton>
                 </Link>
               )}
             </div>
-            <Link to="/cart" className="relative">
-              <IconButton label="Cart" onClick={() => {}}>
+            <Link to="/cart" className="relative" title="Cart" aria-label="Cart">
+              <IconButton label="Cart" asSpan>
                 <ShoppingCart className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
                 <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#FFC400] px-1 text-[11px] font-bold text-slate-950 shadow-md">
                   {cartCount}
@@ -609,19 +609,30 @@ function IconButton({
   label,
   pressed,
   onClick,
+  asSpan,
 }: {
   children: React.ReactNode;
   label: string;
   pressed?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  asSpan?: boolean;
 }) {
+  const className =
+    "relative grid h-10 w-10 place-items-center rounded-full text-white/80 transition-all duration-200 hover:bg-white/10 hover:text-white cursor-pointer";
+  if (asSpan) {
+    return (
+      <span title={label} className={className}>
+        {children}
+      </span>
+    );
+  }
   return (
     <button
       aria-label={label}
       aria-pressed={pressed}
       title={label}
       onClick={onClick}
-      className="relative grid h-10 w-10 place-items-center rounded-full text-white/80 transition-all duration-200 hover:bg-white/10 hover:text-white cursor-pointer"
+      className={className}
     >
       {children}
     </button>

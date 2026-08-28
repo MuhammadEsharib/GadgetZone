@@ -652,7 +652,13 @@ function CartPage() {
               <div className="rounded-xl border border-dashed border-border/60 bg-sky-soft/20 px-4 py-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Heart className="h-4 w-4 text-red-400 shrink-0" />
-                  <span>Want to save items for later? Use the wishlist feature coming soon.</span>
+                  <span>
+                    Want to save items for later? Manage your favorite gadgets in your{" "}
+                    <Link to="/wishlist" className="font-bold text-royal hover:underline">
+                      Wishlist
+                    </Link>
+                    .
+                  </span>
                 </div>
               </div>
 

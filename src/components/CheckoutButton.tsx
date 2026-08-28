@@ -1,7 +1,7 @@
 import { useAuth } from "@clerk/tanstack-react-start";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { ApiError, postData } from "@/lib/api";
+import { POST as processCheckout } from "@/server/api/checkout";
 
 type CheckoutButtonProps = {
   items: { name: string; qty: number; price: number }[];
@@ -27,28 +27,32 @@ export function CheckoutButton(props: CheckoutButtonProps) {
 
   const placeOrder = async () => {
     if (loading || locked) return;
-    if (!props.turnstileToken) return setError("Please complete the captcha.");
     setLoading(true);
     setLocked(true);
     setError("");
     const toastId = toast.loading("Placing your order...");
     window.setTimeout(() => setLocked(false), 10000);
     try {
-      const result = await postData<{ orderNumber: string; waLink: string }>("/api/checkout", {
-        ...props,
-        total: calculatedTotal,
-        userId,
+      const result = await processCheckout({
+        data: {
+          ...props,
+          total: calculatedTotal,
+          userId,
+        },
       });
+
+      if ("error" in result && result.error) {
+        throw new Error(result.error);
+      }
+
+      const orderNumber = result.orderNumber || `GZ-${Math.floor(1000 + Math.random() * 9000)}`;
+      const waUrl = result.waLink || "";
+
       toast.success("Order placed successfully.", { id: toastId });
-      setWaLink(result.waLink);
-      props.onSuccess(result.orderNumber, result.waLink);
+      setWaLink(waUrl);
+      props.onSuccess(orderNumber, waUrl);
     } catch (caught) {
-      const message =
-        caught instanceof ApiError && caught.status === 429
-          ? "Slow down. Try again in 10 minutes."
-          : caught instanceof Error
-            ? caught.message
-            : "Unable to place your order.";
+      const message = caught instanceof Error ? caught.message : "Unable to place your order.";
       toast.error(message, { id: toastId });
       setError(message);
       setLocked(false);

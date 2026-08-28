@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useCallback, useEffect } from "react";
 import {
   Headphones,
@@ -66,9 +66,9 @@ const ALL_CATEGORIES = [
 
 function CategoriesPage() {
   const { cartCount, addToCart } = useCart();
+  const navigate = useNavigate();
   const [toast, setToast] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);
-  const [dialog, setDialog] = useState<null | "checkout">(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -90,9 +90,10 @@ function CategoriesPage() {
     notify("Added to cart");
   };
 
-  const handleBuy = () => {
+  const handleBuy = (product?: Product) => {
+    if (product) addToCart(product.id, 1);
     setSelected(null);
-    setDialog("checkout");
+    navigate({ to: "/checkout" });
   };
 
   // Products grouped by category
@@ -344,25 +345,7 @@ function CategoriesPage() {
         />
       )}
 
-      {/* Checkout dialog */}
-      {dialog && (
-        <Overlay onClose={() => setDialog(null)}>
-          <div className="max-w-md p-10 text-center">
-            <h3 className="font-display text-2xl font-extrabold text-royal-deep">
-              Ready to Checkout
-            </h3>
-            <p className="mt-3 text-sm text-muted-foreground">
-              This is a demo store. Checkout is not enabled yet.
-            </p>
-            <button
-              onClick={() => setDialog(null)}
-              className="mt-7 w-full rounded-full bg-royal px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-royal-deep"
-            >
-              Continue Browsing
-            </button>
-          </div>
-        </Overlay>
-      )}
+
 
       {/* Toast */}
       {toast && (

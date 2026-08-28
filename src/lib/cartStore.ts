@@ -43,16 +43,18 @@ export function useCart() {
 
     // Listen for updates from same window
     window.addEventListener(CART_UPDATE_EVENT, sync);
+
     // Listen for updates from other tabs
-    window.addEventListener("storage", (e) => {
+    const handleStorage = (e: StorageEvent) => {
       if (e.key === "cartItems") {
         sync();
       }
-    });
+    };
+    window.addEventListener("storage", handleStorage);
 
     return () => {
       window.removeEventListener(CART_UPDATE_EVENT, sync);
-      window.removeEventListener("storage", sync);
+      window.removeEventListener("storage", handleStorage);
     };
   }, [sync]);
 

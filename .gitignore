@@ -31,3 +31,6 @@ dist-ssr
 *.sln
 *.sw?
 .env 
+
+# clerk configuration (can include secrets)
+/.clerk/

@@ -30,15 +30,16 @@ export function useWishlist() {
     sync(); // initial load
 
     window.addEventListener(WISHLIST_UPDATE_EVENT, sync);
-    window.addEventListener("storage", (e) => {
+    const handleStorage = (e: StorageEvent) => {
       if (e.key === "wishlistItems") {
         sync();
       }
-    });
+    };
+    window.addEventListener("storage", handleStorage);
 
     return () => {
       window.removeEventListener(WISHLIST_UPDATE_EVENT, sync);
-      window.removeEventListener("storage", sync);
+      window.removeEventListener("storage", handleStorage);
     };
   }, [sync]);
 
