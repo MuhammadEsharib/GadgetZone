@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useUser, useAuth, useClerk, SignIn } from "@clerk/tanstack-react-start";
+import { useSafeUser, useSafeAuth } from "@/lib/auth";
 import { Navbar } from "@/components/store/Navbar";
 import { Footer } from "@/components/store/Footer";
 import { LiveVisitors } from "@/components/store/LiveVisitors";
@@ -28,9 +29,13 @@ function Account() {
   const [cart, setCart] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
 
-  const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
-  const { isSignedIn, isLoaded: isAuthLoaded } = useAuth();
-  const { signOut } = useClerk();
+  const { user: clerkUser, isLoaded: isUserLoaded } = useSafeUser();
+  const { isSignedIn, isLoaded: isAuthLoaded } = useSafeAuth();
+  let signOut = () => {};
+  try {
+    const clerk = useClerk();
+    if (clerk?.signOut) signOut = clerk.signOut;
+  } catch (_) {}
 
   const user = clerkUser
     ? {

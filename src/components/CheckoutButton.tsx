@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/tanstack-react-start";
+import { useSafeAuth } from "@/lib/auth";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { POST as processCheckout } from "@/server/api/checkout";
@@ -17,7 +17,7 @@ type CheckoutButtonProps = {
 };
 
 export function CheckoutButton(props: CheckoutButtonProps) {
-  const { userId } = useAuth();
+  const { userId } = useSafeAuth();
   const subtotal = props.items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const calculatedTotal = subtotal + (subtotal > 5000 ? 0 : 299);
   const [loading, setLoading] = useState(false);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { useAuth, UserButton } from "@clerk/tanstack-react-start";
+import { UserButton } from "@clerk/tanstack-react-start";
+import { useSafeAuth } from "@/lib/auth";
 import {
   Search,
   User,
@@ -46,7 +47,7 @@ export function Navbar({
 
   const { wishlistCount } = useWishlist();
   const { theme, toggleTheme } = useTheme();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn } = useSafeAuth();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
