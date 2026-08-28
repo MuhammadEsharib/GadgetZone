@@ -118,7 +118,7 @@ function CategoriesPage() {
       <div
         className="relative overflow-hidden pt-24 pb-14 sm:pt-28"
         style={{
-          background: "linear-gradient(135deg, #0B2545 0%, #134074 45%, #2F73D9 100%)",
+          background: "linear-gradient(135deg, #070D18 0%, #0B1629 45%, #0F213C 100%)",
         }}
       >
         {/* Decorative rings */}

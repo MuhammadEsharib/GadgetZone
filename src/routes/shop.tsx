@@ -41,8 +41,7 @@ function Shop() {
   const notify = useCallback((message: string) => setToast(message), []);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setIsLoading(false));
-    return () => cancelAnimationFrame(frame);
+    setIsLoading(false);
   }, []);
 
   // Update search input when query param changes (e.g. from header search)

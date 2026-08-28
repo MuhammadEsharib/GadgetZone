@@ -67,11 +67,10 @@ function Home() {
   const navigate = useNavigate();
   const [toast, setToast] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setIsLoading(false));
-    return () => cancelAnimationFrame(frame);
+    setIsLoading(false);
   }, []);
 
   const notify = useCallback((message: string) => setToast(message), []);
@@ -104,15 +103,14 @@ function Home() {
           background: `
             radial-gradient(
               circle at 82% 30%,
-              rgba(139, 199, 247, 0.28) 0%,
-              rgba(139, 199, 247, 0) 38%
+              rgba(59, 130, 246, 0.18) 0%,
+              rgba(59, 130, 246, 0) 45%
             ),
             linear-gradient(
-              120deg,
-              #0B2545 0%,
-              #134074 42%,
-              #2F73D9 72%,
-              #5B9BEF 100%
+              135deg,
+              #070D18 0%,
+              #0B1629 45%,
+              #0F213C 100%
             )
           `,
         }}

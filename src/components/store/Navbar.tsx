@@ -172,13 +172,10 @@ export function Navbar({
               : "max-w-7xl rounded-2xl border border-white/10 bg-[#051124]/90 px-6 py-3 shadow-[0_10px_30px_rgba(5,17,36,0.3)] backdrop-blur-md"
           } flex items-center justify-between relative overflow-hidden`}
         >
-          {/* Light blue background capsule for logo sticking flush to the left */}
-          <div className="absolute bottom-0 left-0 top-0 z-0 w-[9.5rem] rounded-r-[30px] bg-[#629dfa] pointer-events-none sm:w-[12rem]" />
-
-          {/* Logo Container sticking to absolute left on top of the capsule */}
+          {/* Logo Link */}
           <Link
             to="/"
-            className="absolute left-0 top-0 bottom-0 z-10 flex items-center h-full pl-2 sm:pl-3"
+            className="flex items-center gap-2 transition-transform hover:scale-[1.02] active:scale-95 shrink-0"
           >
             <img
               src={logoDark}
@@ -186,9 +183,6 @@ export function Navbar({
               className="h-8 w-auto object-contain sm:h-10"
             />
           </Link>
-
-          {/* Spacer to preserve flex layout alignment */}
-          <div className="w-[8.5rem] shrink-0 sm:w-[11rem]" />
 
           {/* Navigation Links */}
           <nav className="hidden items-center justify-center gap-6 xl:flex 2xl:gap-8">

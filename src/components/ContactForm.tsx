@@ -123,12 +123,9 @@ export function ContactForm({ onSuccess }: { onSuccess: () => void }) {
 
       <Turnstile
         ref={turnstileRef}
-        siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+        siteKey={import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string}
         onSuccess={setToken}
         onError={() => setStatus("Captcha failed to load. Please refresh and try again.")}
-        options={{
-          sandbox: "allow-scripts allow-same-origin",
-        }}
       />
 
       {status && (

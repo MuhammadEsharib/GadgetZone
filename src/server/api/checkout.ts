@@ -20,7 +20,7 @@ export const POST = createServerFn({ method: "POST" })
     }
 
     // Rate limiting if Upstash Redis is configured
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (process.env["UPSTASH_REDIS_REST_URL"] && process.env["UPSTASH_REDIS_REST_TOKEN"]) {
       try {
         const redis = Redis.fromEnv();
         const ratelimit = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m") });
@@ -40,13 +40,13 @@ export const POST = createServerFn({ method: "POST" })
     }
 
     // Turnstile Captcha verification if secret key is present
-    if (process.env.TURNSTILE_SECRET_KEY && turnstileToken) {
+    if (process.env["TURNSTILE_SECRET_KEY"] && turnstileToken) {
       try {
         const verification = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            secret: process.env.TURNSTILE_SECRET_KEY,
+            secret: process.env["TURNSTILE_SECRET_KEY"],
             response: turnstileToken,
             remoteip: ip,
           }),
@@ -69,10 +69,10 @@ export const POST = createServerFn({ method: "POST" })
     const waLink = `https://wa.me/923420024369?text=${waText}`;
 
     // Send confirmation email via Resend if key exists
-    if (process.env.RESEND_API_KEY) {
+    if (process.env["RESEND_API_KEY"]) {
       try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
-        const ownerEmail = process.env.OWNER_EMAIL || "support@thegadgetzone.pk";
+        const resend = new Resend(process.env["RESEND_API_KEY"]);
+        const ownerEmail = process.env["OWNER_EMAIL"] || "support@thegadgetzone.pk";
         const emailHtml = `
           <h2>New Order Received (${orderNum})</h2>
           <p><b>Customer:</b> ${customerName}</p>

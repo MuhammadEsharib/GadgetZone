@@ -48,11 +48,11 @@ class SafeClerkProvider extends Component<{ children: ReactNode }, { hasError: b
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error) {
+  override componentDidCatch(error: Error) {
     console.warn("ClerkProvider initialization warning:", error);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return <>{this.props.children}</>;
     }

@@ -25,15 +25,6 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
-const safeClerkMiddleware = createMiddleware().server(async (opts) => {
-  try {
-    return await clerkMiddleware()(opts);
-  } catch (e) {
-    console.warn("Clerk middleware warning:", e);
-    return await opts.next();
-  }
-});
-
 export const startInstance = createStart(() => ({
-  requestMiddleware: [safeClerkMiddleware, errorMiddleware, csrfMiddleware],
+  requestMiddleware: [clerkMiddleware(), errorMiddleware, csrfMiddleware],
 }));
