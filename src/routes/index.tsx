@@ -98,19 +98,26 @@ function Home() {
 
       {/* Hero Section */}
       <section
-        className="relative isolate overflow-hidden pt-24 pb-8 sm:pt-28 sm:pb-10 lg:pt-32"
+        className="relative isolate overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16 lg:pt-32"
         style={{
           background: `
             radial-gradient(
-              circle at 82% 30%,
-              rgba(59, 130, 246, 0.18) 0%,
-              rgba(59, 130, 246, 0) 45%
+              circle at 80% 20%,
+              rgba(59, 130, 246, 0.35) 0%,
+              rgba(37, 99, 235, 0.15) 35%,
+              transparent 70%
+            ),
+            radial-gradient(
+              circle at 20% 80%,
+              rgba(255, 196, 0, 0.12) 0%,
+              transparent 50%
             ),
             linear-gradient(
               135deg,
-              #070D18 0%,
-              #0B1629 45%,
-              #0F213C 100%
+              #050C1B 0%,
+              #0A192F 35%,
+              #0E264E 70%,
+              #173B78 100%
             )
           `,
         }}

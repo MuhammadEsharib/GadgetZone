@@ -168,19 +168,19 @@ export function Navbar({
         <div
           className={`mx-auto w-full transition-all duration-300 ${
             scrolled
-              ? "max-w-none rounded-none border-b border-white/10 bg-[#051124]/95 px-6 py-3 shadow-md backdrop-blur-md"
-              : "max-w-7xl rounded-2xl border border-white/10 bg-[#051124]/90 px-6 py-3 shadow-[0_10px_30px_rgba(5,17,36,0.3)] backdrop-blur-md"
-          } flex items-center justify-between relative overflow-hidden`}
+              ? "max-w-none rounded-none border-b border-blue-500/20 bg-[#070F22]/95 px-6 py-3 shadow-xl backdrop-blur-xl"
+              : "max-w-7xl rounded-2xl border border-white/12 bg-[#0A192F]/90 px-6 py-3 shadow-[0_15px_45px_rgba(5,12,27,0.6)] backdrop-blur-xl"
+          } flex items-center justify-between relative`}
         >
-          {/* Logo Link */}
+          {/* Logo Link with glowing blue/gold backdrop pill */}
           <Link
             to="/"
-            className="flex items-center gap-2 transition-transform hover:scale-[1.02] active:scale-95 shrink-0"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600/30 via-blue-500/10 to-transparent px-3 py-1.5 border border-blue-400/25 transition-all hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 shrink-0"
           >
             <img
               src={logoDark}
               alt="The Gadget Zone"
-              className="h-8 w-auto object-contain sm:h-10"
+              className="h-8 w-auto object-contain sm:h-9"
             />
           </Link>
 
