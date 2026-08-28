@@ -12,5 +12,10 @@ export const getRouter = () => {
     defaultPreloadStaleTime: 0,
   });
 
+  // Polyfill stores.ids for TanStack Start hydration compatibility
+  if (router.stores && !(router.stores as any).ids) {
+    (router.stores as any).ids = (router.stores as any).matchesId ?? { get: () => [] };
+  }
+
   return router;
 };
