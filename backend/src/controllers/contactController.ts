@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ContactMessageModel } from "../models/ContactMessage.js";
 import { SubscriberModel } from "../models/Subscriber.js";
+import { sendContactNotificationEmail } from "../services/emailService.js";
 
 /**
  * POST /api/contact - Submit contact message
@@ -22,6 +23,14 @@ export async function submitContact(req: Request, res: Response): Promise<void> 
       message: message.trim(),
       status: "New",
     });
+
+    sendContactNotificationEmail({
+      name: doc.name,
+      email: doc.email,
+      phone: doc.phone,
+      subject: doc.subject || "General Inquiry",
+      message: doc.message,
+    }).catch((e) => console.error("⚠️ [Async Contact Email Failed]:", e));
 
     res.status(201).json({
       success: true,

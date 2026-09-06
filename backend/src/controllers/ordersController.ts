@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { OrderModel } from "../models/Order.js";
 import { buildTrackingTimeline } from "../utils/timeline.js";
+import { sendNewOrderEmail } from "../services/emailService.js";
 
 // Helper: clean phone number
 function cleanPhone(phone: string): string {
@@ -90,6 +91,23 @@ export async function createOrder(req: Request, res: Response): Promise<void> {
 
     const waText = `*🛒 NEW ORDER: ${orderNumber}*%0A%0A*👤 Customer:* ${encodeURIComponent(orderDoc.customerName)}%0A*📞 Phone:* ${encodeURIComponent(orderDoc.phone)}%0A*📍 Address:* ${encodeURIComponent(orderDoc.address)}, ${encodeURIComponent(orderDoc.city)}%0A*💳 Payment Method:* ${encodeURIComponent(paymentLabel)}%0A*💰 Total Amount:* Rs. ${orderDoc.total.toLocaleString("en-US")}%0A%0A*📦 Ordered Items:*%0A${itemDetails}${orderDoc.notes ? `%0A%0A*📝 Special Note:* ${encodeURIComponent(orderDoc.notes)}` : ""}`;
     const waLink = `https://wa.me/${ownerWa}?text=${waText}`;
+
+    // Trigger asynchronous Resend email notification
+    sendNewOrderEmail({
+      orderNumber,
+      customerName: orderDoc.customerName,
+      phone: orderDoc.phone,
+      customerEmail: orderDoc.customerEmail,
+      address: orderDoc.address,
+      city: orderDoc.city,
+      notes: orderDoc.notes,
+      paymentMethod: paymentLabel,
+      items: parsedItems,
+      subtotal,
+      shipping,
+      total,
+      createdAt: orderDoc.createdAt,
+    }).catch((e) => console.error("⚠️ [Async Order Email Failed]:", e));
 
     res.status(201).json({
       success: true,
