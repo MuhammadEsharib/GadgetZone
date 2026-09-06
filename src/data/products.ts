@@ -19,11 +19,19 @@ export type Product = {
   category: string;
   rating: number;
   price: number;
-  oldPrice?: number;
-  discount?: number;
+  oldPrice?: number | undefined;
+  discount?: number | undefined;
   image: string;
   gallery: string[];
   description: string;
+  isDeal?: boolean | undefined;
+  isDealOfTheDay?: boolean | undefined;
+  dealTag?: string | undefined;
+  dealExpiry?: string | undefined;
+  badge?: string | undefined;
+  stockCount?: number | undefined;
+  inStock?: boolean | undefined;
+  featured?: boolean | undefined;
 };
 
 export const products: Product[] = [
@@ -188,3 +196,69 @@ export const categories = [
 ];
 
 export const formatPrice = (value: number) => `Rs. ${value.toLocaleString("en-US")}`;
+
+const ASSET_LOOKUP: Record<string, string> = {
+  "/src/assets/p1.jpg": p1,
+  "/src/assets/p2.jpg": p2,
+  "/src/assets/p3.jpg": p3,
+  "/src/assets/p4.jpg": p4,
+  "/src/assets/p5.jpg": p5,
+  "/src/assets/p6.jpg": p6,
+  "/src/assets/p7.jpg": p7,
+  "/src/assets/p8.jpg": p8,
+  "/src/assets/c1.jpg": c1,
+  "/src/assets/c2.jpg": c2,
+  "/src/assets/c3.jpg": c3,
+  "/src/assets/c4.jpg": c4,
+  "/src/assets/c5.jpg": c5,
+  "/src/assets/c6.jpg": c6,
+  "/assets/p1.jpg": p1,
+  "/assets/p2.jpg": p2,
+  "/assets/p3.jpg": p3,
+  "/assets/p4.jpg": p4,
+  "/assets/p5.jpg": p5,
+  "/assets/p6.jpg": p6,
+  "/assets/p7.jpg": p7,
+  "/assets/p8.jpg": p8,
+  "/assets/c1.jpg": c1,
+  "/assets/c2.jpg": c2,
+  "/assets/c3.jpg": c3,
+  "/assets/c4.jpg": c4,
+  "/assets/c5.jpg": c5,
+  "/assets/c6.jpg": c6,
+  "p1.jpg": p1,
+  "p2.jpg": p2,
+  "p3.jpg": p3,
+  "p4.jpg": p4,
+  "p5.jpg": p5,
+  "p6.jpg": p6,
+  "p7.jpg": p7,
+  "p8.jpg": p8,
+  "c1.jpg": c1,
+  "c2.jpg": c2,
+  "c3.jpg": c3,
+  "c4.jpg": c4,
+  "c5.jpg": c5,
+  "c6.jpg": c6,
+};
+
+export function resolveProductImage(src?: string): string {
+  if (!src) return p1;
+  if (
+    src.startsWith("data:") ||
+    src.startsWith("blob:") ||
+    src.startsWith("http://") ||
+    src.startsWith("https://")
+  ) {
+    return src;
+  }
+  const clean = src.trim();
+  if (ASSET_LOOKUP[clean]) {
+    return ASSET_LOOKUP[clean];
+  }
+  const filename = clean.split("/").pop();
+  if (filename && ASSET_LOOKUP[filename]) {
+    return ASSET_LOOKUP[filename];
+  }
+  return clean || p1;
+}

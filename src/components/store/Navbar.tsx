@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { UserButton } from "@clerk/tanstack-react-start";
-import { useSafeAuth } from "@/lib/auth";
 import {
   Search,
   User,
@@ -14,18 +12,14 @@ import {
   Sparkles,
   ShoppingBag,
   Heart,
-  Sun,
-  Moon,
 } from "lucide-react";
 import logoDark from "@/assets/logo-dark.png";
 import { products, categories, formatPrice } from "@/data/products";
 import { useWishlist } from "@/lib/wishlistStore";
-import { useTheme } from "@/hooks/useTheme";
 
 const navLinks = [
   { name: "Home", to: "/" },
   { name: "Shop", to: "/shop" },
-  { name: "Categories", to: "/categories" },
   { name: "Deals", to: "/deals" },
   { name: "FAQs", to: "/faq" },
   { name: "About Us", to: "/about" },
@@ -46,8 +40,6 @@ export function Navbar({
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   const { wishlistCount } = useWishlist();
-  const { theme, toggleTheme } = useTheme();
-  const { isSignedIn } = useSafeAuth();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -168,19 +160,19 @@ export function Navbar({
         <div
           className={`mx-auto w-full transition-all duration-300 ${
             scrolled
-              ? "max-w-none rounded-none border-b border-blue-500/20 bg-[#070F22]/95 px-6 py-3 shadow-xl backdrop-blur-xl"
-              : "max-w-7xl rounded-2xl border border-white/12 bg-[#0A192F]/90 px-6 py-3 shadow-[0_15px_45px_rgba(5,12,27,0.6)] backdrop-blur-xl"
+              ? "max-w-none rounded-none border-b border-blue-500/20 bg-[#070F22]/95 pr-6 sm:pr-8 pl-0 h-16 shadow-xl backdrop-blur-xl overflow-hidden"
+              : "max-w-7xl rounded-2xl border border-white/12 bg-[#0A192F]/95 pr-6 sm:pr-8 pl-0 h-16 sm:h-[68px] shadow-[0_15px_45px_rgba(5,12,27,0.6)] backdrop-blur-xl overflow-hidden"
           } flex items-center justify-between relative`}
         >
-          {/* Logo Link with glowing blue/gold backdrop pill */}
+          {/* Logo Link spanning full navbar height with seamless sky-blue curved tab */}
           <Link
             to="/"
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600/30 via-blue-500/10 to-transparent px-3 py-1.5 border border-blue-400/25 transition-all hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 shrink-0"
+            className="relative h-full self-stretch px-5 sm:px-8 bg-[#629dfa] rounded-r-full flex items-center justify-center border-r border-white/20 shadow-[0_4px_20px_rgba(98,157,250,0.35)] transition-all hover:brightness-105 shrink-0"
           >
             <img
               src={logoDark}
               alt="The Gadget Zone"
-              className="h-8 w-auto object-contain sm:h-9"
+              className="h-8 sm:h-9 w-auto object-contain"
             />
           </Link>
 
@@ -224,38 +216,11 @@ export function Navbar({
                 </IconButton>
               </Link>
 
-              {/* Theme Toggle Button */}
-              <div className="hidden md:block">
-                <IconButton
-                  label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-                  pressed={theme === "dark"}
-                  onClick={toggleTheme}
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
-                  ) : (
-                    <Moon className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
-                  )}
+              <Link to="/account" className="relative" title="Account & Track Orders" aria-label="Account & Track Orders">
+                <IconButton label="Account" asSpan>
+                  <User className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
                 </IconButton>
-              </div>
-
-              {isSignedIn ? (
-                <div className="hidden items-center gap-2 pl-1.5 pr-0.5 md:flex">
-                  <UserButton />
-                  <Link
-                    to="/account"
-                    className="text-xs font-bold text-white/95 hover:text-[#FFC400] transition-colors hidden xl:inline-block"
-                  >
-                    Dashboard
-                  </Link>
-                </div>
-              ) : (
-                <Link to="/account" className="relative" title="Account" aria-label="Account">
-                  <IconButton label="Account" asSpan>
-                    <User className="h-5 w-5 text-white/95 hover:text-[#FFC400] transition-colors" />
-                  </IconButton>
-                </Link>
-              )}
+              </Link>
             </div>
             <Link to="/cart" className="relative" title="Cart" aria-label="Cart">
               <IconButton label="Cart" asSpan>
@@ -331,18 +296,6 @@ export function Navbar({
               )}
             </Link>
 
-            {/* Mobile Theme Toggle */}
-            <button
-              onClick={() => {
-                toggleTheme();
-                setOpen(false);
-              }}
-              className="w-full text-left rounded-lg px-3 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white flex items-center gap-2"
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              Theme: {theme === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
-
             {/* Mobile Cart Link */}
             <Link
               to="/cart"
@@ -359,27 +312,15 @@ export function Navbar({
               )}
             </Link>
 
-            {isSignedIn ? (
-              <Link
-                to="/account"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white"
-              >
-                <span className="flex items-center gap-2">
-                  <User className="h-4 w-4" /> My Account (Dashboard)
-                </span>
-              </Link>
-            ) : (
-              <Link
-                to="/account"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white"
-              >
-                <span className="flex items-center gap-2">
-                  <User className="h-4 w-4" /> Sign In / Create Account
-                </span>
-              </Link>
-            )}
+            <Link
+              to="/account"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-white/80 hover:bg-white/10 hover:text-white"
+            >
+              <span className="flex items-center gap-2">
+                <User className="h-4 w-4" /> Track Orders & Account
+              </span>
+            </Link>
           </nav>
         )}
       </header>

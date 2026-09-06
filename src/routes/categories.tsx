@@ -28,22 +28,20 @@ import {
   SkeletonProductGrid,
   SkeletonCategoryTile,
 } from "@/components/store/SkeletonCard";
-import { products, categories, formatPrice, type Product } from "@/data/products";
+import { categories, formatPrice, type Product } from "@/data/products";
 import { useCart } from "@/lib/cartStore";
+import { useProducts } from "@/lib/productsStore";
 import { ProductCard } from "@/components/store/ProductCard";
 
+import { redirect } from "@tanstack/react-router";
+
 export const Route = createFileRoute("/categories")({
-  head: () => ({
-    meta: [
-      { title: "Shop by Category — The Gadget Zone" },
-      {
-        name: "description",
-        content:
-          "Browse all gadget categories at The Gadget Zone. Find earbuds, smart watches, headphones, speakers, power banks and more.",
-      },
-    ],
-  }),
-  component: CategoriesPage,
+  beforeLoad: () => {
+    throw redirect({
+      to: "/shop",
+    });
+  },
+  component: () => null,
 });
 
 // All category definitions with icons
@@ -66,6 +64,7 @@ const ALL_CATEGORIES = [
 
 function CategoriesPage() {
   const { cartCount, addToCart } = useCart();
+  const { products } = useProducts();
   const navigate = useNavigate();
   const [toast, setToast] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);

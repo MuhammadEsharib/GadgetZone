@@ -23,8 +23,9 @@ import { Navbar } from "@/components/store/Navbar";
 import { Footer } from "@/components/store/Footer";
 import { LazyImage } from "@/components/store/LazyImage";
 import { SkeletonCartItem, SkeletonOrderSummary } from "@/components/store/SkeletonCard";
-import { products, formatPrice, type Product } from "@/data/products";
+import { formatPrice, type Product } from "@/data/products";
 import { useCart } from "@/lib/cartStore";
+import { useProducts } from "@/lib/productsStore";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -395,6 +396,7 @@ function OrderSummary({
 
 // Empty cart
 function EmptyCart() {
+  const { products } = useProducts();
   return (
     <div className="flex flex-col items-center justify-center gap-5 py-20 text-center">
       <div className="relative grid h-28 w-28 place-items-center rounded-full bg-sky-soft">
@@ -457,6 +459,7 @@ function EmptyCart() {
 function CartPage() {
   const navigate = useNavigate();
   const { items, cartCount: navCartCount, updateQty, removeFromCart, clearCart } = useCart();
+  const { products } = useProducts();
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);

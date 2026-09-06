@@ -1,5 +1,6 @@
 import { ImageOff } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { resolveProductImage } from "@/data/products";
 
 interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -9,8 +10,8 @@ interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 }
 
 /**
- * LazyImage — shows a shimmer skeleton while the image loads,
- * then fades the image in with a smooth opacity transition.
+ * LazyImage — resolves product image URLs automatically,
+ * checks decode/cache status instantly to eliminate image loading lag.
  */
 export function LazyImage({
   src,
@@ -19,46 +20,61 @@ export function LazyImage({
   skeletonClassName = "",
   ...props
 }: LazyImageProps) {
+  const resolvedSrc = resolveProductImage(src);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const { onLoad, onError, ...imageProps } = props;
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
-    setLoaded(false);
     setFailed(false);
-  }, [src]);
+    if (imgRef.current) {
+      if (imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+        setLoaded(true);
+      }
+    }
+  }, [resolvedSrc]);
 
   return (
-    <span className="relative block h-full w-full">
-      {/* Shimmer until image is loaded */}
-      {!loaded && (
-        <span className={`skeleton absolute inset-0 ${skeletonClassName}`} aria-hidden="true" />
+    <span className="relative block h-full w-full overflow-hidden">
+      {/* Skeleton placeholder shown only while loading */}
+      {!loaded && !failed && (
+        <span
+          className={`skeleton absolute inset-0 z-0 ${skeletonClassName}`}
+          aria-hidden="true"
+        />
       )}
       {failed ? (
         <span
           role="img"
           aria-label={alt ? `${alt} image unavailable` : "Image unavailable"}
-          className="absolute inset-0 grid place-items-center bg-sky-soft text-muted-foreground"
+          className="absolute inset-0 grid place-items-center bg-sky-soft text-muted-foreground z-10"
         >
           <ImageOff className="h-8 w-8 opacity-60" aria-hidden="true" />
         </span>
       ) : (
         <img
-          src={src}
+          ref={(el) => {
+            imgRef.current = el;
+            if (el && el.complete && el.naturalWidth > 0 && !loaded) {
+              setLoaded(true);
+            }
+          }}
+          src={resolvedSrc}
           alt={alt}
-          loading="lazy"
+          loading="eager"
           decoding="async"
           onLoad={(event) => {
             setLoaded(true);
-            onLoad?.(event);
+            props.onLoad?.(event);
           }}
           onError={(event) => {
             setFailed(true);
-            setLoaded(true);
-            onError?.(event);
+            props.onError?.(event);
           }}
-          className={`${className} ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
-          {...imageProps}
+          className={`relative z-10 ${className} transition-opacity duration-150 ${
+            loaded ? "opacity-100" : "opacity-90"
+          }`}
+          {...props}
         />
       )}
     </span>

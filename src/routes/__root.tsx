@@ -1,10 +1,10 @@
-import { ClerkProvider } from "@clerk/tanstack-react-start";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -34,30 +34,6 @@ function NotFoundComponent() {
       </div>
     </div>
   );
-}
-
-import { Component } from "react";
-
-class SafeClerkProvider extends Component<{ children: ReactNode }, { hasError: boolean }> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  override componentDidCatch(error: Error) {
-    console.warn("ClerkProvider initialization warning:", error);
-  }
-
-  override render() {
-    if (this.state.hasError) {
-      return <>{this.props.children}</>;
-    }
-    return <ClerkProvider>{this.props.children}</ClerkProvider>;
-  }
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
@@ -143,30 +119,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const theme = localStorage.getItem('theme') || 'dark';
-                if (theme === 'dark') {
-                  document.documentElement.classList.add('dark');
-                } else {
-                  document.documentElement.classList.remove('dark');
-                }
+                localStorage.setItem('theme', 'light');
+                document.documentElement.classList.remove('dark');
               } catch (_) {}
             `,
           }}
         />
       </head>
       <body>
-        <SafeClerkProvider>
-          {children}
-          <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
-          <Scripts />
-        </SafeClerkProvider>
+        {children}
+        <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
+        <Scripts />
       </body>
     </html>
   );
@@ -174,14 +144,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminRoute = pathname.startsWith("/admin");
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
 
-      {/* Floating AI Chatbot Widget */}
-      <AIChatbot />
+      {/* Floating AI Chatbot Widget for customers */}
+      {!isAdminRoute && <AIChatbot />}
     </QueryClientProvider>
   );
 }

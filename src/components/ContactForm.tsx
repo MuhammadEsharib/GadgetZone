@@ -1,21 +1,37 @@
-import { Turnstile } from "@marsidev/react-turnstile";
 import { Send } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { POST as sendContactMessage } from "@/server/api/contact"; // <-- YE CHANGE
+import { api } from "@/lib/api";
 
-export function ContactForm({ onSuccess }: { onSuccess: () => void }) {
+export function ContactForm({
+  onSuccess,
+  selectedTopic,
+}: {
+  onSuccess: () => void;
+  selectedTopic?: string;
+}) {
   const [fields, setFields] = useState({
     name: "",
     email: "",
-    subject: "",
+    phone: "",
+    subject: selectedTopic ? `[${selectedTopic}] ` : "",
     message: "",
     website: "",
   });
-  const [token, setToken] = useState("");
+
+  // Sync selected topic if parent changes it
+  useEffect(() => {
+    if (selectedTopic) {
+      setFields((prev) => ({
+        ...prev,
+        subject: prev.subject && !prev.subject.startsWith("[")
+          ? `[${selectedTopic}] ${prev.subject}`
+          : `[${selectedTopic}] Inquiry`,
+      }));
+    }
+  }, [selectedTopic]);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const turnstileRef = useRef<any>(null);
 
   const update = (key: keyof typeof fields, value: string) =>
     setFields((current) => ({ ...current, [key]: value }));
@@ -23,47 +39,46 @@ export function ContactForm({ onSuccess }: { onSuccess: () => void }) {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (fields.website) return; // honeypot
-    if (!token) return setStatus("Please complete the captcha.");
+
+    if (!fields.name.trim() || !fields.email.trim() || !fields.message.trim()) {
+      setStatus("Please fill in all required fields.");
+      return;
+    }
 
     setLoading(true);
     setStatus(null);
     const toastId = toast.loading("Sending your message...");
 
     try {
-      const result = await sendContactMessage({
-        // <-- YE CHANGE: postData ki jagah
-        data: {
-          name: fields.name,
-          email: fields.email,
-          message: `Subject: ${fields.subject}\n\n${fields.message}`,
-          turnstileToken: token,
-          website: fields.website,
-        },
+      const fullMessage = fields.phone.trim()
+        ? `[Phone: ${fields.phone.trim()}]\n\n${fields.message.trim()}`
+        : fields.message.trim();
+
+      const result = await api.submitContact({
+        name: fields.name.trim(),
+        email: fields.email.trim(),
+        subject: fields.subject.trim() || "Website Inquiry",
+        message: fullMessage,
       });
 
-      // Server se error aya to
-      if ("error" in result) {
-        throw new Error(result.error);
+      if (!result || !result.success || result.error) {
+        throw new Error(result?.error || "Failed to send message.");
       }
 
       toast.success("Message sent successfully.", { id: toastId });
-      setFields({ name: "", email: "", subject: "", message: "", website: "" });
-      setToken("");
-      turnstileRef.current?.reset();
+      setFields({ name: "", email: "", phone: "", subject: "", message: "", website: "" });
       onSuccess();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unable to send your message.";
       toast.error(message, { id: toastId });
       setStatus(message);
-      turnstileRef.current?.reset();
-      setToken("");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form onSubmit={submit} className="space-y-4 sm:space-y-5">
       <input
         tabIndex={-1}
         autoComplete="off"
@@ -75,58 +90,63 @@ export function ContactForm({ onSuccess }: { onSuccess: () => void }) {
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="space-y-1.5 text-xs font-bold text-foreground/80">
-          Full Name
+        <label className="space-y-1.5 text-xs font-bold text-foreground">
+          Full Name <span className="text-red-500">*</span>
           <input
             required
             value={fields.name}
             onChange={(event) => update("name", event.target.value)}
-            placeholder="Your Name"
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-normal focus:border-royal focus:outline-none focus:ring-1 focus:ring-royal"
+            placeholder="e.g. Muhammad Ali"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-all focus:border-royal focus:outline-none focus:ring-2 focus:ring-royal/20 placeholder:text-muted-foreground/60 shadow-inner"
           />
         </label>
-        <label className="space-y-1.5 text-xs font-bold text-foreground/80">
-          Email Address
+        <label className="space-y-1.5 text-xs font-bold text-foreground">
+          Email Address <span className="text-red-500">*</span>
           <input
             required
             type="email"
             value={fields.email}
             onChange={(event) => update("email", event.target.value)}
-            placeholder="yourname@domain.com"
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-normal focus:border-royal focus:outline-none focus:ring-1 focus:ring-royal"
+            placeholder="name@example.com"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-all focus:border-royal focus:outline-none focus:ring-2 focus:ring-royal/20 placeholder:text-muted-foreground/60 shadow-inner"
           />
         </label>
       </div>
 
-      <label className="block space-y-1.5 text-xs font-bold text-foreground/80">
-        Subject
-        <input
-          required
-          value={fields.subject}
-          onChange={(event) => update("subject", event.target.value)}
-          placeholder="How can we help you?"
-          className="w-full rounded-xl border-border bg-background px-4 py-2.5 text-sm font-normal focus:border-royal focus:outline-none focus:ring-1 focus:ring-royal"
-        />
-      </label>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label className="space-y-1.5 text-xs font-bold text-foreground">
+          Phone / WhatsApp <span className="text-muted-foreground font-normal text-[11px]">(Optional)</span>
+          <input
+            type="tel"
+            value={fields.phone}
+            onChange={(event) => update("phone", event.target.value)}
+            placeholder="03XX XXXXXXX"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-all focus:border-royal focus:outline-none focus:ring-2 focus:ring-royal/20 placeholder:text-muted-foreground/60 shadow-inner"
+          />
+        </label>
+        <label className="space-y-1.5 text-xs font-bold text-foreground">
+          Subject <span className="text-red-500">*</span>
+          <input
+            required
+            value={fields.subject}
+            onChange={(event) => update("subject", event.target.value)}
+            placeholder="e.g. Order status, Warranty claim..."
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-all focus:border-royal focus:outline-none focus:ring-2 focus:ring-royal/20 placeholder:text-muted-foreground/60 shadow-inner"
+          />
+        </label>
+      </div>
 
-      <label className="block space-y-1.5 text-xs font-bold text-foreground/80">
-        Message Description
+      <label className="block space-y-1.5 text-xs font-bold text-foreground">
+        Message Details <span className="text-red-500">*</span>
         <textarea
           required
           rows={5}
           value={fields.message}
           onChange={(event) => update("message", event.target.value)}
-          placeholder="Detail your inquiry here..."
-          className="w-full resize-none rounded-xl border-border bg-background px-4 py-2.5 text-sm font-normal focus:border-royal focus:outline-none focus:ring-1 focus:ring-royal"
+          placeholder="Please describe how we can assist you..."
+          className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-all focus:border-royal focus:outline-none focus:ring-2 focus:ring-royal/20 placeholder:text-muted-foreground/60 shadow-inner"
         />
       </label>
-
-      <Turnstile
-        ref={turnstileRef}
-        siteKey={import.meta.env["VITE_TURNSTILE_SITE_KEY"] as string}
-        onSuccess={setToken}
-        onError={() => setStatus("Captcha failed to load. Please refresh and try again.")}
-      />
 
       {status && (
         <p role="alert" className="text-xs font-bold text-destructive">
@@ -137,10 +157,10 @@ export function ContactForm({ onSuccess }: { onSuccess: () => void }) {
       <button
         type="submit"
         disabled={loading}
-        className="flex items-center justify-center gap-2 rounded-full bg-royal px-6 py-3.5 text-xs font-bold text-primary-foreground transition-all hover:bg-royal-deep disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-royal hover:bg-royal-deep px-8 py-3.5 text-xs font-bold text-white transition-all shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
       >
-        <Send className="h-3.5 w-3.5" />
-        {loading ? "Sending..." : "Send Message"}
+        <Send className="h-3.5 w-3.5 text-gold" />
+        <span>{loading ? "Transmitting..." : "Send Message"}</span>
       </button>
     </form>
   );

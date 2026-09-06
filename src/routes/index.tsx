@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Shield,
@@ -32,12 +32,12 @@ import {
 import { Navbar } from "@/components/store/Navbar";
 import { ProductCard } from "@/components/store/ProductCard";
 import { ProductModal, Overlay } from "@/components/store/ProductModal";
-import { LiveVisitors } from "@/components/store/LiveVisitors";
 import { Footer } from "@/components/store/Footer";
 import { LazyImage } from "@/components/store/LazyImage";
 import { SkeletonProductGrid, SkeletonCategoryCard } from "@/components/store/SkeletonCard";
-import { products, categories, type Product } from "@/data/products";
+import { categories, type Product } from "@/data/products";
 import { useCart } from "@/lib/cartStore";
+import { useProducts } from "@/lib/productsStore";
 import logo from "@/assets/logo.png";
 import heroProducts from "@/assets/hero-products.png";
 import banner from "@/assets/banner.jpg";
@@ -64,10 +64,21 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { cartCount, addToCart } = useCart();
+  const { products } = useProducts();
   const navigate = useNavigate();
   const [toast, setToast] = useState<string | null>(null);
   const [selected, setSelected] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Strictly 2 rows of 5 products = 10 products total on the homepage
+  // Filters products selected/featured from the Admin dashboard
+  const homeProducts = useMemo(() => {
+    const explicitlyFeatured = products.filter((p) => p.featured === true);
+    if (explicitlyFeatured.length > 0) {
+      return explicitlyFeatured.slice(0, 10);
+    }
+    return products.slice(0, 10);
+  }, [products]);
 
   useEffect(() => {
     setIsLoading(false);
@@ -102,44 +113,66 @@ function Home() {
         style={{
           background: `
             radial-gradient(
-              circle at 80% 20%,
-              rgba(59, 130, 246, 0.35) 0%,
-              rgba(37, 99, 235, 0.15) 35%,
+              circle at 80% 35%,
+              rgba(56, 189, 248, 0.28) 0%,
+              rgba(37, 99, 235, 0.22) 35%,
               transparent 70%
             ),
             radial-gradient(
-              circle at 20% 80%,
-              rgba(255, 196, 0, 0.12) 0%,
+              circle at 20% 25%,
+              rgba(59, 130, 246, 0.25) 0%,
               transparent 50%
             ),
+            radial-gradient(
+              circle at 15% 85%,
+              rgba(255, 196, 0, 0.08) 0%,
+              transparent 40%
+            ),
             linear-gradient(
-              135deg,
-              #050C1B 0%,
-              #0A192F 35%,
-              #0E264E 70%,
-              #173B78 100%
+              140deg,
+              #081836 0%,
+              #0b2352 20%,
+              #0f357f 45%,
+              #154caa 72%,
+              #1d60d3 100%
             )
           `,
         }}
       >
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-70 [mask-image:linear-gradient(to_bottom,black,transparent_90%)]" />
+        {/* Tech Grid Pattern */}
+        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.07)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] opacity-70" />
+
+        {/* Concentric Tech Circle Lines in Background */}
+        <div className="absolute top-1/2 right-[8%] -translate-y-1/2 w-[540px] h-[540px] rounded-full border border-white/10 pointer-events-none -z-10" />
+        <div className="absolute top-1/2 right-[2%] -translate-y-1/2 w-[720px] h-[720px] rounded-full border border-white/5 pointer-events-none -z-10" />
+
+        {/* Decorative Tech Dot Clusters */}
+        <div className="absolute top-24 right-[42%] hidden lg:grid grid-cols-4 gap-2.5 opacity-35 pointer-events-none -z-10">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <span key={i} className="h-1 w-1 rounded-full bg-white" />
+          ))}
+        </div>
+        <div className="absolute top-40 right-10 hidden lg:grid grid-cols-4 gap-2.5 opacity-30 pointer-events-none -z-10">
+          {Array.from({ length: 16 }).map((_, i) => (
+            <span key={i} className="h-1 w-1 rounded-full bg-white" />
+          ))}
+        </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-10 py-8 sm:gap-12 sm:py-12 lg:grid-cols-12 lg:gap-8 lg:py-16">
+          <div className="grid items-center gap-10 py-6 sm:gap-12 sm:py-10 lg:grid-cols-12 lg:gap-8 lg:py-12">
             {/* Left Column (Content) */}
             <div className="z-10 flex flex-col items-center text-center lg:col-span-6 lg:items-start lg:text-left">
-              <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-[#051124]/35 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-[#FFC400] sm:px-4">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#FFC400] animate-pulse" /> Welcome to
-                The Gadget Zone
+              <span className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-[#0B1A3A]/80 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#FFC400] shadow-sm backdrop-blur-md sm:px-4">
+                <span className="h-2 w-2 rounded-full bg-[#FFC400] animate-pulse" /> WELCOME TO THE GADGET ZONE
               </span>
 
-              <h1 className="mt-5 max-w-[12ch] font-display text-[clamp(2.5rem,6vw,4.75rem)] font-extrabold leading-[0.98] text-white">
+              <h1 className="mt-5 max-w-[12ch] font-display text-[clamp(2.5rem,6vw,4.75rem)] font-extrabold leading-[1.02] text-white tracking-tight">
                 Upgrade Your
                 <span className="block">Lifestyle With</span>
                 <span className="text-[#FFC400]">Smarter Tech</span>
               </h1>
 
-              <p className="mt-6 max-w-[34rem] text-sm font-medium leading-relaxed text-white/78 sm:text-base">
+              <p className="mt-5 max-w-[34rem] text-sm font-medium leading-relaxed text-white/95 sm:text-base">
                 Discover the latest gadgets and smart technology designed to make your everyday life
                 easier.
               </p>
@@ -147,39 +180,43 @@ function Home() {
               <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4 lg:justify-start">
                 <Link
                   to="/shop"
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#FFC400] px-6 py-3.5 text-xs font-extrabold uppercase tracking-wider text-slate-950 shadow-[0_4px_20px_rgba(255,196,0,0.3)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#FFD033] sm:flex-none"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#FFC400] px-8 py-3.5 text-xs font-extrabold uppercase tracking-wider text-slate-950 shadow-[0_4px_25px_rgba(255,196,0,0.4)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#FFD033] sm:flex-none cursor-pointer"
                 >
-                  <ShoppingCart className="h-4 w-4 shrink-0" /> Shop Now
+                  <ShoppingCart className="h-4 w-4 shrink-0" /> SHOP NOW
                 </Link>
                 <Link
                   to="/shop"
-                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-6 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 sm:flex-none"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-xs font-extrabold uppercase tracking-wider text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 sm:flex-none cursor-pointer"
                 >
-                  Explore Gadgets <ArrowRight className="h-4 w-4 shrink-0" />
+                  EXPLORE GADGETS <ArrowRight className="h-4 w-4 shrink-0" />
                 </Link>
               </div>
             </div>
 
-            {/* Right Column (Transparent Product Composite) */}
-            <div className="relative z-10 flex items-center justify-center lg:col-span-6">
-              <div className="relative w-full max-w-[min(100%,38rem)] transition-transform duration-700 hover:scale-[1.015] motion-safe:animate-pop">
+            {/* Right Column (Product Showcase Hero Composite) */}
+            <div className="relative z-10 flex flex-col items-center justify-center lg:col-span-6">
+              <div className="relative w-full max-w-[min(100%,42rem)] transition-transform duration-700 hover:scale-[1.015] motion-safe:animate-pop flex flex-col items-center">
                 <img
                   src={heroProducts}
                   alt="Premium Smart Gadgets Collection"
                   loading="eager"
                   width={962}
                   height={621}
-                  className="h-auto w-full select-none object-contain drop-shadow-[0_20px_35px_rgba(7,28,57,0.32)]"
+                  className="relative z-10 h-auto w-full select-none object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)]"
                 />
+                {/* Realistic Expanded Multi-Layer Floor Shadow for Larger Product Image */}
+                <div className="w-[100%] sm:w-[98%] h-10 sm:h-14 -mt-6 sm:-mt-9 bg-black/60 rounded-[100%] blur-2xl pointer-events-none transform scale-y-75" />
+                <div className="w-[88%] sm:w-[85%] h-5 sm:h-7 -mt-4 sm:-mt-5 bg-black/80 rounded-[100%] blur-lg pointer-events-none" />
+                <div className="w-[72%] sm:w-[70%] h-2.5 sm:h-3 -mt-2 bg-black/90 rounded-[100%] blur-sm pointer-events-none" />
               </div>
             </div>
           </div>
 
           {/* Spacing Divider */}
-          <div className="h-px w-full bg-white/10 my-6" />
+          <div className="h-px w-full bg-white/15 my-4" />
 
           {/* Trust / Feature Row */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-6 border-t border-white/10 py-6 sm:gap-6 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-6 py-6 sm:gap-6 md:grid-cols-4">
             {[
               { icon: Shield, title: "100% Original", desc: "Genuine Products" },
               { icon: Truck, title: "Fast Delivery", desc: "Across Pakistan" },
@@ -187,54 +224,51 @@ function Home() {
               { icon: Clock, title: "24/7 Support", desc: "We're Here to Help" },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-center gap-3">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/10 text-[#FFC400] border border-white/10">
+                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-white/15 text-[#FFC400] border border-white/20 backdrop-blur-md shadow-sm">
                   <Icon className="h-5 w-5" />
                 </div>
                 <div>
                   <h4 className="font-display text-xs font-bold text-white tracking-wide">
                     {title}
                   </h4>
-                  <p className="text-[10px] text-white/60 font-semibold">{desc}</p>
+                  <p className="text-[11px] text-white/75 font-medium">{desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Product Category Bar - Infinite Scrolling Marquee */}
-          <div className="relative mt-8 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#051124]/40 py-4 backdrop-blur-sm">
+          {/* Product Category Bar - Curved Dark Floating Strip */}
+          <div className="relative mt-4 w-full overflow-hidden rounded-2xl border border-white/15 bg-[#08152F]/90 py-3.5 backdrop-blur-xl shadow-2xl">
             {/* Soft fade-out gradients on left/right edges */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#051124]/90 to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#051124]/90 to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#08152F] to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#08152F] to-transparent z-10" />
 
             <div className="flex w-max animate-marquee hover:[animation-play-state:paused] cursor-pointer">
               {/* Set 1 */}
-              <div className="flex items-center gap-12 px-6">
+              <div className="flex items-center gap-10 px-6">
                 {[
-                  { icon: Headphones, name: "Headphones" },
-                  { icon: Headphones, name: "Earbuds" },
-                  { icon: Watch, name: "Smart Watches" },
-                  { icon: Smartphone, name: "Smartphones" },
-                  { icon: Laptop, name: "Laptops" },
-                  { icon: Tablet, name: "Tablets" },
-                  { icon: Speaker, name: "Speakers" },
-                  { icon: Camera, name: "Cameras" },
                   { icon: Gamepad2, name: "Gaming" },
                   { icon: BatteryCharging, name: "Power Banks" },
                   { icon: Cable, name: "Chargers & Cables" },
                   { icon: Tv, name: "Smart TVs" },
                   { icon: HomeIcon, name: "Home Appliances" },
                   { icon: Plug, name: "Smart Plug & Power" },
+                  { icon: Headphones, name: "Headphones" },
+                  { icon: Headphones, name: "Earbuds" },
+                  { icon: Watch, name: "Smart Watches" },
+                  { icon: Smartphone, name: "Smartphones" },
+                  { icon: Laptop, name: "Laptops" },
                 ].map((cat, idx) => (
                   <Link
                     key={`${cat.name}-1`}
                     to="/shop"
                     search={{ category: cat.name }}
-                    className="flex flex-col items-center gap-1.5 group transition-colors shrink-0"
+                    className="flex flex-col items-center gap-1 group transition-colors shrink-0"
                   >
-                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-white/5 text-[#FFC400] group-hover:bg-[#FFC400] group-hover:text-slate-950 transition-colors border border-white/5">
-                      <cat.icon className="h-4.5 w-4.5" />
+                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-[#FFC400] group-hover:bg-[#FFC400] group-hover:text-slate-950 transition-colors border border-white/5">
+                      <cat.icon className="h-4 w-4" />
                     </div>
-                    <span className="text-[10px] font-bold text-white/80 group-hover:text-white transition-colors text-center whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-white/90 group-hover:text-white transition-colors text-center whitespace-nowrap">
                       {cat.name}
                     </span>
                   </Link>
@@ -242,33 +276,30 @@ function Home() {
               </div>
 
               {/* Set 2 (Duplicate for infinite seamless looping) */}
-              <div className="flex items-center gap-12 px-6" aria-hidden="true">
+              <div className="flex items-center gap-10 px-6" aria-hidden="true">
                 {[
-                  { icon: Headphones, name: "Headphones" },
-                  { icon: Headphones, name: "Earbuds" },
-                  { icon: Watch, name: "Smart Watches" },
-                  { icon: Smartphone, name: "Smartphones" },
-                  { icon: Laptop, name: "Laptops" },
-                  { icon: Tablet, name: "Tablets" },
-                  { icon: Speaker, name: "Speakers" },
-                  { icon: Camera, name: "Cameras" },
                   { icon: Gamepad2, name: "Gaming" },
                   { icon: BatteryCharging, name: "Power Banks" },
                   { icon: Cable, name: "Chargers & Cables" },
                   { icon: Tv, name: "Smart TVs" },
                   { icon: HomeIcon, name: "Home Appliances" },
                   { icon: Plug, name: "Smart Plug & Power" },
+                  { icon: Headphones, name: "Headphones" },
+                  { icon: Headphones, name: "Earbuds" },
+                  { icon: Watch, name: "Smart Watches" },
+                  { icon: Smartphone, name: "Smartphones" },
+                  { icon: Laptop, name: "Laptops" },
                 ].map((cat, idx) => (
                   <Link
                     key={`${cat.name}-2`}
                     to="/shop"
                     search={{ category: cat.name }}
-                    className="flex flex-col items-center gap-1.5 group transition-colors shrink-0"
+                    className="flex flex-col items-center gap-1 group transition-colors shrink-0"
                   >
-                    <div className="grid h-9 w-9 place-items-center rounded-lg bg-white/5 text-[#FFC400] group-hover:bg-[#FFC400] group-hover:text-slate-950 transition-colors border border-white/5">
-                      <cat.icon className="h-4.5 w-4.5" />
+                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/5 text-[#FFC400] group-hover:bg-[#FFC400] group-hover:text-slate-950 transition-colors border border-white/5">
+                      <cat.icon className="h-4 w-4" />
                     </div>
-                    <span className="text-[10px] font-bold text-white/80 group-hover:text-white transition-colors text-center whitespace-nowrap">
+                    <span className="text-[10px] font-bold text-white/90 group-hover:text-white transition-colors text-center whitespace-nowrap">
                       {cat.name}
                     </span>
                   </Link>
@@ -277,17 +308,18 @@ function Home() {
             </div>
           </div>
         </div>
+
       </section>
 
-      {/* Trending */}
+      {/* Trending / Featured Products (2 Rows of 5 = 10 Products Total) */}
       <section id="trending" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:py-24">
-        <SectionHeading title="Trending Gadgets" subtitle="Explore our most popular gadgets" />
+        <SectionHeading title="Trending &amp; Featured Gadgets" subtitle="Explore our hand-picked collection of smart technology" />
         <div className="mt-10">
           {isLoading ? (
-            <SkeletonProductGrid count={8} />
+            <SkeletonProductGrid count={10} />
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {products.map((p, idx) => (
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-5">
+              {homeProducts.map((p, idx) => (
                 <ProductCard
                   key={p.id}
                   product={p}
@@ -303,9 +335,9 @@ function Home() {
         <div className="mt-12 text-center">
           <Link
             to="/shop"
-            className="group inline-flex items-center gap-2 rounded-full border border-royal/30 px-7 py-3.5 text-sm font-bold text-royal transition-colors hover:bg-sky-soft"
+            className="group inline-flex items-center justify-center gap-2 rounded-full bg-royal hover:bg-royal-deep text-white px-8 py-3.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
-            See All Products
+            <span>Show All Products</span>
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
@@ -471,7 +503,6 @@ function Home() {
       </section>
 
       <Footer />
-      <LiveVisitors />
 
       {/* Product Details Modal */}
       {selected && (

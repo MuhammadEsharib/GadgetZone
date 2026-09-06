@@ -1,61 +1,87 @@
-import { useSafeAuth } from "@/lib/auth";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { POST as processCheckout } from "@/server/api/checkout";
+import { api } from "@/lib/api";
+import { type Order } from "@/lib/orderTypes";
 
 type CheckoutButtonProps = {
-  items: { name: string; qty: number; price: number }[];
+  items: { name: string; qty: number; price: number; id?: number; image?: string }[];
   customerName: string;
-  customerEmail: string;
+  customerEmail?: string;
   phone: string;
   address: string;
   city: string;
   paymentMethod: string;
   total: number;
-  turnstileToken: string;
-  onSuccess: (orderNumber: string, waLink: string) => void;
+  notes?: string;
+  onSuccess: (orderNumber: string, waLink: string, order?: Order) => void;
 };
 
-export function CheckoutButton(props: CheckoutButtonProps) {
-  const { userId } = useSafeAuth();
-  const subtotal = props.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-  const calculatedTotal = subtotal + (subtotal > 5000 ? 0 : 299);
+export function CheckoutButton({
+  items,
+  customerName,
+  customerEmail = "",
+  phone,
+  address,
+  city,
+  paymentMethod,
+  total,
+  notes = "",
+  onSuccess,
+}: CheckoutButtonProps) {
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const calculatedTotal = subtotal + (subtotal > 5000 || subtotal === 0 ? 0 : 299);
   const [loading, setLoading] = useState(false);
-  const [locked, setLocked] = useState(false);
   const [error, setError] = useState("");
   const [waLink, setWaLink] = useState("");
 
   const placeOrder = async () => {
-    if (loading || locked) return;
+    if (loading) return;
+
+    if (!customerName.trim() || !phone.trim() || !address.trim()) {
+      setError("Please fill out your Name, Phone Number, and Delivery Address.");
+      return;
+    }
+
     setLoading(true);
-    setLocked(true);
     setError("");
     const toastId = toast.loading("Placing your order...");
-    window.setTimeout(() => setLocked(false), 10000);
-    try {
-      const result = await processCheckout({
-        data: {
-          ...props,
-          total: calculatedTotal,
-          userId,
-        },
-      });
 
-      if ("error" in result && result.error) {
-        throw new Error(result.error);
+    try {
+      // Clean payload - only serializable primitives and plain objects
+      const payload = {
+        customerName: customerName.trim(),
+        phone: phone.trim(),
+        customerEmail: customerEmail.trim(),
+        address: address.trim(),
+        city: city.trim(),
+        notes: notes.trim(),
+        paymentMethod,
+        items: items.map((i) => ({
+          id: i.id,
+          name: i.name,
+          price: Number(i.price),
+          qty: Number(i.qty) || 1,
+          image: i.image,
+        })),
+        total: calculatedTotal,
+      };
+
+      const result = await api.createOrder(payload);
+
+      if (!result || !result.success || result.error) {
+        throw new Error(result?.error || "Unable to place order.");
       }
 
       const orderNumber = result.orderNumber || `GZ-${Math.floor(1000 + Math.random() * 9000)}`;
       const waUrl = result.waLink || "";
 
-      toast.success("Order placed successfully.", { id: toastId });
+      toast.success("Order placed successfully!", { id: toastId });
       setWaLink(waUrl);
-      props.onSuccess(orderNumber, waUrl);
+      onSuccess(orderNumber, waUrl, result.order);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to place your order.";
       toast.error(message, { id: toastId });
       setError(message);
-      setLocked(false);
     } finally {
       setLoading(false);
     }
@@ -66,13 +92,23 @@ export function CheckoutButton(props: CheckoutButtonProps) {
       <button
         type="button"
         onClick={placeOrder}
-        disabled={loading || locked}
-        className="w-full rounded-full bg-royal px-5 py-3.5 text-sm font-bold text-white transition-colors hover:bg-royal-deep disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={loading}
+        className="w-full rounded-full bg-royal px-6 py-4 text-sm font-bold text-white transition-all hover:bg-royal-deep shadow-lg hover:shadow-royal/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
       >
-        {loading ? "Placing order..." : `Place Order (Rs. ${calculatedTotal.toLocaleString()})`}
+        {loading ? (
+          <>
+            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            Placing your order...
+          </>
+        ) : (
+          `Confirm & Place Order (Rs. ${calculatedTotal.toLocaleString()})`
+        )}
       </button>
       {error && (
-        <p role="alert" className="text-xs font-bold text-destructive">
+        <p role="alert" className="text-xs font-bold text-destructive text-center">
           {error}
         </p>
       )}
@@ -81,9 +117,9 @@ export function CheckoutButton(props: CheckoutButtonProps) {
           href={waLink}
           target="_blank"
           rel="noreferrer"
-          className="block text-center text-xs font-bold text-emerald-600 underline-offset-2 hover:underline"
+          className="block text-center text-xs font-bold text-emerald-500 underline-offset-2 hover:underline pt-1"
         >
-          Open WhatsApp order
+          📱 Open WhatsApp Order Confirmation
         </a>
       )}
     </div>

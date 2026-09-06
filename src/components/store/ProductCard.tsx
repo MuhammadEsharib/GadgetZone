@@ -22,12 +22,12 @@ export function ProductCard({
 
   return (
     <article
-      className={`animate-fade-in-up stagger-${stagger + 1} group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_8px_30px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-royal/30 hover:shadow-[var(--shadow-card)]`}
+      className={`animate-fade-in-up stagger-${stagger + 1} group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:border-royal/30 hover:shadow-[var(--shadow-card)]`}
     >
       <div className="relative aspect-square overflow-hidden bg-sky-soft/50">
         <button
           onClick={onOpen}
-          className="relative block h-full w-full"
+          className="relative block h-full w-full cursor-pointer"
           aria-label={`View ${product.name}`}
         >
           <LazyImage
@@ -44,67 +44,95 @@ export function ProductCard({
             e.stopPropagation();
             toggleWishlist(product.id);
           }}
-          className="absolute right-3 top-3 z-20 grid h-8 w-8 place-items-center rounded-full bg-card/85 text-foreground border border-border/50 shadow-[0_2px_10px_rgba(0,0,0,0.06)] hover:bg-card hover:text-red-500 hover:scale-110 active:scale-95 transition-all duration-200"
+          className="absolute right-1.5 top-1.5 sm:right-2.5 sm:top-2.5 z-20 grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-full bg-card/90 text-foreground border border-border/50 shadow-sm hover:bg-card hover:text-red-500 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
           <Heart
-            className={`h-4 w-4 transition-all duration-300 ${
+            className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-all duration-300 ${
               wishlisted ? "fill-red-500 text-red-500 scale-105" : "text-muted-foreground"
             }`}
           />
         </button>
 
-        {product.discount && (
-          <span className="absolute left-3 top-3 z-10 rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold text-royal-deep">
+        {product.discount && product.inStock !== false && (
+          <span className="absolute left-1.5 top-1.5 sm:left-2.5 sm:top-2.5 z-10 rounded-full bg-gold px-1.5 py-0.5 sm:px-2.5 sm:py-1 text-[8.5px] sm:text-[10.5px] font-extrabold text-royal-deep shadow-sm">
             {product.discount}% OFF
           </span>
         )}
+
+        {/* Out of Stock Overlay */}
+        {product.inStock === false && (
+          <div className="absolute inset-0 z-10 bg-slate-950/60 backdrop-blur-[1.5px] flex items-center justify-center p-2">
+            <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[9px] sm:text-[11px] font-extrabold uppercase tracking-wider text-white shadow-lg border border-rose-400/40">
+              Out of Stock
+            </span>
+          </div>
+        )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <span className="inline-block rounded-full bg-sky-soft px-2 py-0.5 text-[10px] font-bold text-royal w-fit">
-          {product.category}
-        </span>
-        <h3 className="font-display text-[15px] font-bold leading-snug text-foreground line-clamp-2">
+      <div className="flex flex-1 flex-col gap-1 sm:gap-1.5 p-2.5 sm:p-4">
+        <div className="flex items-center justify-between gap-1">
+          <span className="inline-block rounded-full bg-sky-soft px-1.5 py-0.5 text-[8.5px] sm:text-[10px] font-bold text-royal w-fit">
+            {product.category}
+          </span>
+          {product.inStock === false && (
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-rose-600">
+              Unavailable
+            </span>
+          )}
+        </div>
+        <h3 className="font-display text-[11.5px] sm:text-[14px] font-bold leading-tight sm:leading-snug text-foreground line-clamp-2 min-h-[2.2rem] sm:min-h-[2.5rem]">
           {product.name}
         </h3>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground">
           <span className="flex text-gold">
             {[0, 1, 2, 3, 4].map((i) => (
-              <Star key={i} className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
+              <Star key={i} className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5" fill="currentColor" strokeWidth={0} />
             ))}
           </span>
-          {product.rating}
+          <span className="text-[10px] sm:text-xs font-semibold">{product.rating}</span>
         </div>
-        <div className="flex items-baseline gap-2">
-          <span className="font-display text-lg font-extrabold text-royal">
+        <div className="flex items-baseline gap-1.5 flex-wrap mt-0.5">
+          <span className="font-display text-xs sm:text-base font-extrabold text-royal">
             {formatPrice(product.price)}
           </span>
           {product.oldPrice && (
-            <span className="text-sm text-muted-foreground line-through">
+            <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
               {formatPrice(product.oldPrice)}
             </span>
           )}
         </div>
 
-        <div className="mt-auto flex min-h-10 gap-2 pt-3">
-          <button
-            onClick={onAdd}
-            type="button"
-            aria-label={`Add ${product.name} to cart`}
-            className="min-h-10 flex-1 rounded-full border border-royal/25 px-3 py-2 text-xs font-bold text-royal transition-colors hover:bg-sky-soft active:scale-95"
-          >
-            Add to Cart
-          </button>
-          <button
-            onClick={onBuy}
-            type="button"
-            aria-label={`Buy ${product.name} now`}
-            className="min-h-10 flex-1 rounded-full bg-royal px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-royal-deep active:scale-95"
-          >
-            Buy Now
-          </button>
-        </div>
+        {product.inStock === false ? (
+          <div className="mt-auto pt-2 sm:pt-3">
+            <button
+              type="button"
+              disabled
+              className="w-full rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-3 py-1.5 sm:py-2 text-[9px] sm:text-xs font-bold cursor-not-allowed text-center uppercase tracking-wider opacity-90"
+            >
+              Out of Stock
+            </button>
+          </div>
+        ) : (
+          <div className="mt-auto flex gap-1 sm:gap-2 pt-2 sm:pt-3">
+            <button
+              onClick={onAdd}
+              type="button"
+              aria-label={`Add ${product.name} to cart`}
+              className="flex-1 rounded-full border border-royal/25 px-1.5 py-1.5 sm:px-3 sm:py-2 text-[9px] sm:text-xs font-bold text-royal transition-colors hover:bg-sky-soft active:scale-95 cursor-pointer text-center whitespace-nowrap"
+            >
+              Add to Cart
+            </button>
+            <button
+              onClick={onBuy}
+              type="button"
+              aria-label={`Buy ${product.name} now`}
+              className="flex-1 rounded-full bg-royal px-1.5 py-1.5 sm:px-3 sm:py-2 text-[9px] sm:text-xs font-bold text-primary-foreground transition-colors hover:bg-royal-deep active:scale-95 cursor-pointer text-center whitespace-nowrap"
+            >
+              Buy Now
+            </button>
+          </div>
+        )}
       </div>
     </article>
   );
