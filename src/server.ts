@@ -46,6 +46,54 @@ function isH3SwallowedErrorBody(body: string): boolean {
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+
+    // Proxy all /api routes to the backend Express server
+    if (url.pathname.startsWith("/api")) {
+      const backendBase = process.env.BACKEND_URL || "http://localhost:5000";
+      const targetUrl = `${backendBase}${url.pathname}${url.search}`;
+        const backendHeaders = new Headers();
+        const forbiddenHeaders = new Set([
+          "host",
+          "connection",
+          "expect",
+          "content-length",
+          "transfer-encoding",
+          "keep-alive",
+        ]);
+
+        request.headers.forEach((value, key) => {
+          if (!forbiddenHeaders.has(key.toLowerCase())) {
+            backendHeaders.set(key, value);
+          }
+        });
+
+        const body = ["GET", "HEAD"].includes(request.method)
+          ? undefined
+          : await request.arrayBuffer();
+
+        const backendRes = await fetch(targetUrl, {
+          method: request.method,
+          headers: backendHeaders,
+          body,
+          redirect: "manual",
+        });
+        return backendRes;
+      } catch (err) {
+        console.error(`[API Proxy Error] Failed to proxy ${request.url} to ${targetUrl}:`, err);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Backend server is offline or unreachable on " + backendBase,
+          }),
+          {
+            status: 502,
+            headers: { "content-type": "application/json" },
+          }
+        );
+      }
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
