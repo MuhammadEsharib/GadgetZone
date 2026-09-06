@@ -55,8 +55,10 @@ function WishlistPage() {
 
   const handleBuy = (product: Product) => {
     addToCart(product.id, 1);
-    notify(`Added to cart. Redirecting...`);
-    window.location.href = "/cart";
+    if (typeof window !== "undefined") {
+      localStorage.setItem("gz_checkout_items", JSON.stringify([product.id]));
+    }
+    window.location.href = "/checkout";
   };
 
   return (

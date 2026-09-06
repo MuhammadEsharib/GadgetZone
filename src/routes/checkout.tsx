@@ -92,10 +92,17 @@ function CheckoutPage() {
   }, []);
 
   // Filter items in cart
-  const checkoutItems = items
-    .filter((item) => !selectedCheckoutIds || selectedCheckoutIds.includes(item.id))
+  const rawFiltered = items.filter(
+    (item) =>
+      !selectedCheckoutIds ||
+      selectedCheckoutIds.length === 0 ||
+      selectedCheckoutIds.some((id) => String(id) === String(item.id))
+  );
+  const effectiveItems = rawFiltered.length > 0 ? rawFiltered : items;
+
+  const checkoutItems = effectiveItems
     .map((item) => {
-      const product = products.find((p) => p.id === item.id);
+      const product = products.find((p) => String(p.id) === String(item.id));
       return product ? { product, qty: item.qty } : null;
     })
     .filter(Boolean) as { product: Product; qty: number }[];
@@ -109,7 +116,7 @@ function CheckoutPage() {
     if (selectedRaw) {
       try {
         const selectedIds = JSON.parse(selectedRaw);
-        if (Array.isArray(selectedIds) && selectedIds.every((id) => Number.isInteger(id))) {
+        if (Array.isArray(selectedIds)) {
           setSelectedCheckoutIds(selectedIds);
         }
       } catch {
@@ -561,9 +568,11 @@ function CheckoutPage() {
                 <div className="pt-3">
                   <CheckoutButton
                     items={checkoutItems.map(({ product, qty }) => ({
+                      id: product.id,
                       name: product.name,
                       qty,
                       price: product.price,
+                      image: product.image,
                     }))}
                     customerName={name}
                     customerEmail={email}

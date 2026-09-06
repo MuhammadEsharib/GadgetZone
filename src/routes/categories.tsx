@@ -276,7 +276,7 @@ function CategoriesPage() {
                       index={idx}
                       onOpen={() => setSelected(p)}
                       onAdd={() => handleAddToCart(p, 1)}
-                      onBuy={handleBuy}
+                      onBuy={() => handleBuy(p)}
                     />
                   ))}
                 </div>
@@ -340,7 +340,7 @@ function CategoriesPage() {
           product={selected}
           onClose={() => setSelected(null)}
           onAdd={(qty) => handleAddToCart(selected, qty)}
-          onBuy={handleBuy}
+          onBuy={() => handleBuy(selected)}
         />
       )}
 

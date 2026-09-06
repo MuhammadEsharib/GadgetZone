@@ -123,7 +123,12 @@ function Shop() {
   };
 
   const handleBuy = (product?: Product) => {
-    if (product?.id) addToCart(product.id, 1);
+    if (product?.id) {
+      addToCart(product.id, 1);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("gz_checkout_items", JSON.stringify([product.id]));
+      }
+    }
     setSelected(null);
     navigate({ to: "/checkout" });
   };
