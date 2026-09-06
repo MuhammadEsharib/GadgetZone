@@ -20,6 +20,7 @@ backend/node_modules
 .vinxi
 .tanstack/**
 .nitro
+.vercel
 *.local
 .env
 .env*.local
