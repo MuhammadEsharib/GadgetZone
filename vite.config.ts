@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tailwindcss(),
@@ -17,7 +17,7 @@ export default defineConfig({
       server: { entry: "server" },
     }),
     nitro({
-      preset: process.env.NITRO_PRESET || (process.env.VERCEL ? "vercel" : "vercel"),
+      preset: process.env.NITRO_PRESET || (process.env.VERCEL || command === "build" ? "vercel" : undefined),
     }),
     react(),
   ],
@@ -43,4 +43,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
