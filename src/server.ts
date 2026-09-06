@@ -52,6 +52,7 @@ export default {
     if (url.pathname.startsWith("/api")) {
       const backendBase = process.env.BACKEND_URL || "http://localhost:5000";
       const targetUrl = `${backendBase}${url.pathname}${url.search}`;
+      try {
         const backendHeaders = new Headers();
         const forbiddenHeaders = new Set([
           "host",
