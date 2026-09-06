@@ -10,6 +10,7 @@ const CART_UPDATE_EVENT = "tg_cart_update";
 
 // Helper to read from local storage
 const readCart = (): CartItemData[] => {
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem("cartItems");
     if (raw) {
@@ -23,6 +24,7 @@ const readCart = (): CartItemData[] => {
 
 // Helper to write to local storage and dispatch event
 const writeCart = (items: CartItemData[]) => {
+  if (typeof window === "undefined") return;
   localStorage.setItem("cartItems", JSON.stringify(items));
   // Keep the simple 'cart' item count for legacy code compatibility
   const count = items.reduce((s, i) => s + i.qty, 0);

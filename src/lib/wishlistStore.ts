@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 const WISHLIST_UPDATE_EVENT = "tg_wishlist_update";
 
 const readWishlist = (): number[] => {
+  if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem("wishlistItems");
     if (raw) {
@@ -15,6 +16,7 @@ const readWishlist = (): number[] => {
 };
 
 const writeWishlist = (items: number[]) => {
+  if (typeof window === "undefined") return;
   localStorage.setItem("wishlistItems", JSON.stringify(items));
   window.dispatchEvent(new Event(WISHLIST_UPDATE_EVENT));
 };
